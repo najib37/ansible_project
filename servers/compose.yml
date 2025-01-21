@@ -1,0 +1,22 @@
+
+# Demo servers compose
+
+services:
+  server:
+    image: alpine:latest
+    hostname: alpine
+    command: 
+      sh -c "sleep 1 && apk add openssh && 
+      adduser -D najib && 
+      echo 'najib:1111' | chpasswd && 
+      ssh-keygen -A && 
+      /usr/sbin/sshd -D"
+    deploy:
+      mode: replicated
+      replicas: 3
+    ports:
+      - "4040-4042:22"
+    networks:
+      - internalNet
+networks:
+  internalNet:
