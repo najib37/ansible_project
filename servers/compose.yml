@@ -2,7 +2,7 @@
 # Demo servers compose
 
 services:
-  server:
+  alpine:
     # image: alpine_server:local
     profiles: ["alpine"]
     hostname: alpine
@@ -16,7 +16,6 @@ services:
         RUN echo 'najib:1111' | chpasswd
     privileged: true
     entrypoint: /usr/sbin/sshd -D
-    restart: always
     deploy:
       mode: replicated
       replicas: 3
@@ -28,7 +27,7 @@ services:
     networks:
       - internalNet
 
-  debian-server:
+  debian:
     profiles: ["debian"]
     build:
       dockerfile_inline: |
@@ -44,7 +43,6 @@ services:
     hostname: debian
     privileged: true
     entrypoint: /usr/sbin/sshd -D
-    restart: always
     deploy:
       mode: replicated
       replicas: 3
