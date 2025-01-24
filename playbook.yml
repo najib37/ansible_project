@@ -62,6 +62,17 @@
         name: docker
         break_system_packages: true
 
+    - name: make sure the docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: clear existing docker compose services
+      community.docker.docker_compose_v2:
+        project_src: /home/docker
+        state: absent
+
     - name: create remote directories
       file:
         path: 
