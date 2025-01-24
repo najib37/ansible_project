@@ -1,0 +1,21 @@
+
+
+---
+# - hosts: all
+#   become: true
+#   tasks:
+#     - name: check the name
+#       # apk: 
+#       #   name: neovim
+#       #   state: present
+#       service: 
+#         name: network
+#         state: started
+
+- hosts: debian_servers
+  become: true
+  tasks:
+    - name: debian ssh service check
+      service:
+        name: ssh
+        state: stopped

@@ -1,0 +1,28 @@
+
+
+# webservers:
+# hosts:
+#   ansible_host: 127.0.0.1
+#   http_port: 4040
+#   http_user: najib
+# webservers:
+#   hosts:
+#     server1:
+#       ansible_host: localhost
+#       ansible_port: 4040
+#       ansible_user: najib
+#     server2:
+#       ansible_host: localhost
+#       ansible_port: 4041
+#       ansible_user: najib
+#     server3:
+#       ansible_host: localhost
+#       ansible_port: 4042
+#       ansible_user: najib
+
+debian_servers:
+  hosts:
+    debian1:
+      ansible_host: localhost
+      ansible_port: 4043
+      ansible_user: najib
