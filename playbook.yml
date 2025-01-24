@@ -77,7 +77,7 @@
 
     - name: running the docker compose 
       community.docker.docker_compose_v2:
-        project_src: /home/docker/docker-setup/
+        project_src: /home/docker/
       register: docker_compose_output
 
     - name: log the docker copose output
