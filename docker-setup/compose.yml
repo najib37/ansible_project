@@ -6,9 +6,10 @@ configs:
 
 services:
   nginx:
-    container_name: nginx_server
+    container_name: nginx
     image: nginx:1.27-alpine
     working_dir: /etc/nginx/
+    restart: always
     ports:
       - 443:443
       - 80:80
@@ -21,6 +22,7 @@ services:
   wordpress:
     container_name: wordpress
     image: wordpress:6.7.1-php8.1-apache
+    restart: always
     networks:
       - internal_network
     environment:
@@ -30,6 +32,7 @@ services:
       WORDPRESS_DB_NAME: exampledb
   db:
     image: mysql:8.0-debian
+    container_name: database
     restart: always
     environment:
       MYSQL_DATABASE: exampledb
@@ -40,15 +43,43 @@ services:
       - internal_network
     volumes:
       - db:/var/lib/mysql
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin:5.2
+    restart: always
+    ports:
+      - 5555:80
+    # TODO: delete this 
+    environment:
+      PMA_USER: exampleuser
+      PMA_PASSWORD: examplepass
+    networks:
+      - internal_network
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    ports:
+      - 9000:9000
+    volumes:
+      - portainer:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - internal_network
 
 volumes:
+  portainer:
+    name: portainer
+    driver_opts:
+      o: bind
+      device: ${PWD}/../data/portainer/
+      type: none
   db:
     name: db 
     driver_opts:
       o: bind
-      device: /home/najib/out-core/ansible/docker-setup/db/
+      device: ${PWD}/../data/db/
       type: none
-
 
 networks:
   internal_network:
