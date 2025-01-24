@@ -1,0 +1,54 @@
+
+configs:
+  nginx_conf:
+    file: ./nginx.conf
+
+
+services:
+  nginx:
+    container_name: nginx_server
+    image: nginx:1.27-alpine
+    working_dir: /etc/nginx/
+    ports:
+      - 443:443
+      - 80:80
+    configs:
+      - source: nginx_conf
+        target: /etc/nginx/conf.d/default.conf
+    networks:
+      - internal_network
+
+  wordpress:
+    container_name: wordpress
+    image: wordpress:6.7.1-php8.1-apache
+    networks:
+      - internal_network
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: exampleuser
+      WORDPRESS_DB_PASSWORD: examplepass
+      WORDPRESS_DB_NAME: exampledb
+  db:
+    image: mysql:8.0-debian
+    restart: always
+    environment:
+      MYSQL_DATABASE: exampledb
+      MYSQL_USER: exampleuser
+      MYSQL_PASSWORD: examplepass
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    networks:
+      - internal_network
+    volumes:
+      - db:/var/lib/mysql
+
+volumes:
+  db:
+    name: db 
+    driver_opts:
+      o: bind
+      device: /home/najib/out-core/ansible/docker-setup/db/
+      type: none
+
+
+networks:
+  internal_network:
