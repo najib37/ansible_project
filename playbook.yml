@@ -62,19 +62,22 @@
         name: docker
         break_system_packages: true
 
-    - name: create docker work directory
+    - name: create remote directories
       file:
-        path: /home/docker/data
+        path: 
+          - /home/docker/
+          - /home/data/portainer/
+          - /home/data/db/
         state: directory
     # coping data to the remote server
     - name: coping docker compose work directory
       copy:
-        src: ./docker-setup
-        dest: /home/docker
+        src: ./docker-setup/
+        dest: /home/docker/
 
     - name: running the docker compose 
       community.docker.docker_compose_v2:
-        project_src: /home/docker/docker-setup
+        project_src: /home/docker/docker-setup/
       register: docker_compose_output
 
     - name: log the docker copose output

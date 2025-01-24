@@ -72,13 +72,13 @@ volumes:
     name: portainer
     driver_opts:
       o: bind
-      device: ${PWD}/../data/portainer/
+      device: /home/data/portainer/
       type: none
   db:
     name: db 
     driver_opts:
       o: bind
-      device: ${PWD}/../data/db/
+      device: /home/data/db/
       type: none
 
 networks:
