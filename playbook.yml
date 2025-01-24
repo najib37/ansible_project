@@ -1,21 +1,83 @@
-
-
 ---
-# - hosts: all
-#   become: true
-#   tasks:
-#     - name: check the name
-#       # apk: 
-#       #   name: neovim
-#       #   state: present
-#       service: 
-#         name: network
-#         state: started
 
-- hosts: debian_servers
+- hosts: debian1
   become: true
   tasks:
-    - name: debian ssh service check
-      service:
-        name: ssh
-        state: stopped
+
+    # checking the memory usage just for debug
+    - name: Check system memory using free command
+      command: free -h
+      register: free_output
+    - name: Display memory information
+      debug:
+        var: free_output.stdout_lines
+
+    # start of the project
+    # installing the certs dependencies
+    - name: Install python3-cryptography
+      apt:
+        name: python3-cryptography
+        state: present
+    - name: Generate private key
+      community.crypto.openssl_privatekey:
+        path: /home/certificate.key
+    - name: "create self signed cert"
+      community.crypto.x509_certificate:
+        path: /home/certificate.pem
+        privatekey_path: /home/certificate.key
+        provider: selfsigned
+
+    # installing docker
+    - name: Install docker dependencies
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+        break_system_packages: true
+
+    - name: create docker work directory
+      file:
+        path: /home/docker/data
+        state: directory
+    # coping data to the remote server
+    - name: coping docker compose work directory
+      copy:
+        src: ./docker-setup
+        dest: /home/docker
+
+    - name: running the docker compose 
+      community.docker.docker_compose_v2:
+        project_src: /home/docker/docker-setup
+      register: docker_compose_output
+
+    - name: log the docker copose output
+      debug:
+        var: docker_compose_output
+    
