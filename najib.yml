@@ -1,0 +1,20 @@
+---
+- hosts: debian1
+  become: true
+  tasks:
+    # - name: create docker directories
+    #   file:
+    #     path: /home/data
+    #     state: directory
+    - name: create docker compose remote directory
+      file:
+        path: /home/docker
+        state: directory
+    - name: create portainer volume mount
+      file:
+        path: /home/data/portainer
+        state: directory
+    - name: create database volume mount
+      file:
+        path: /home/data/db
+        state: directory

@@ -68,23 +68,30 @@
         state: started
         enabled: true
 
-    - name: clear existing docker compose services
-      community.docker.docker_compose_v2:
-        project_src: /home/docker
-        state: absent
-
-    - name: create remote directories
+    - name: create docker compose remote directory
       file:
-        path: 
-          - /home/docker/
-          - /home/data/portainer/
-          - /home/data/db/
+        path: /home/docker
         state: directory
+    - name: create portainer volume mount
+      file:
+        path: /home/data/portainer
+        state: directory
+    - name: create database volume mount
+      file:
+        path: /home/data/db
+        state: directory
+
+
     # coping data to the remote server
     - name: coping docker compose work directory
       copy:
         src: ./docker-setup/
         dest: /home/docker/
+
+    - name: clear existing docker compose services
+      community.docker.docker_compose_v2:
+        project_src: /home/docker
+        state: absent
 
     - name: running the docker compose 
       community.docker.docker_compose_v2:

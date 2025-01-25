@@ -23,6 +23,6 @@
 debian_servers:
   hosts:
     debian1:
-      ansible_host: 159.223.117.59
+      ansible_host: 165.227.171.18
       # ansible_port: 
       ansible_user: root
