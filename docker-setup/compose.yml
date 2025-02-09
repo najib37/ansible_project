@@ -2,78 +2,16 @@
 configs:
   nginx_conf:
     file: ./nginx.conf
+
+secrets:
   nginx_cert_pem:
     file: /home/certificate.pem
   nginx_cert_key:
     file: /home/certificate.key
-
-
-services:
-  nginx:
-    container_name: nginx
-    image: nginx:1.27-alpine
-    working_dir: /etc/nginx/
-    restart: always
-    ports:
-      - 443:443
-      - 80:80
-    configs:
-      - source: nginx_conf
-        target: /etc/nginx/conf.d/default.conf
-      - source: nginx_cert_pem
-        target: /etc/nginx/certificate.pem
-      - source: nginx_cert_key
-        target: /etc/nginx/certificate.key
-    networks:
-      - internal_network
-
-  wordpress:
-    container_name: wordpress
-    image: wordpress:6.7.1-php8.1-apache
-    restart: always
-    networks:
-      - internal_network
-    environment:
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: exampleuser
-      WORDPRESS_DB_PASSWORD: examplepass
-      WORDPRESS_DB_NAME: exampledb
-  db:
-    image: mysql:8.0-debian
-    container_name: database
-    restart: always
-    environment:
-      MYSQL_DATABASE: exampledb
-      MYSQL_USER: exampleuser
-      MYSQL_PASSWORD: examplepass
-      MYSQL_RANDOM_ROOT_PASSWORD: '1'
-    networks:
-      - internal_network
-    volumes:
-      - db:/var/lib/mysql
-  phpmyadmin:
-    container_name: phpmyadmin
-    image: phpmyadmin:5.2
-    restart: always
-    ports:
-      - 5555:80
-    # TODO: delete this 
-    environment:
-      PMA_USER: exampleuser
-      PMA_PASSWORD: examplepass
-    networks:
-      - internal_network
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: portainer
-    restart: always
-    ports:
-      - 9000:9000
-    volumes:
-      - portainer:/data
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - internal_network
+  db_password:
+    file: /home/docker/secrets/db_password.txt
+  db_root_password: 
+    file: /home/docker/secrets/db_root_password.txt
 
 volumes:
   portainer:
@@ -91,3 +29,71 @@ volumes:
 
 networks:
   internal_network:
+
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:1.27-alpine
+    working_dir: /etc/nginx/
+    restart: always
+    ports:
+      - 443:443
+      - 80:80
+    configs:
+      - source: nginx_conf
+        target: /etc/nginx/conf.d/default.conf
+    secrets:
+      - source: nginx_cert_pem
+        target: /etc/nginx/certs/certificate.pem
+      - source: nginx_cert_key
+        target: /etc/nginx/certs/certificate.key
+    networks:
+      - internal_network
+
+  wordpress:
+    container_name: wordpress
+    image: wordpress:6.7.1-php8.1-apache
+    restart: always
+    networks:
+      - internal_network
+    environment:
+      WORDPRESS_DB_HOST: "db:3306"
+      WORDPRESS_DB_USER: najib
+      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password
+      WORDPRESS_DB_NAME: wordpress
+    secrets:
+      - db_password
+
+  db:
+    image: mysql:8.0-debian
+    container_name: database
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: najib
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    secrets:
+      - db_password
+      - db_root_password
+    networks:
+      - internal_network
+    volumes:
+      - db:/var/lib/mysql
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin:5.2
+    restart: always
+    networks:
+      - internal_network
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    volumes:
+      - portainer:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - internal_network
