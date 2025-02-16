@@ -1,0 +1,43 @@
+
+---
+
+  - name: Populate service facts
+    ansible.builtin.service_facts:
+
+  - name: Set docker status fact
+    set_fact:
+      docker_exists: "{{ 'docker.service' in ansible_facts.services }}"
+
+  - name: Stop the docker compose old project and delete volumes 
+    community.docker.docker_compose_v2:
+      project_src: /home/docker/
+      state: absent
+      remove_images: all
+      remove_orphans: true
+      remove_volumes: true
+    when: docker_exists
+
+  - name: Remove Docker packages
+    apt:
+      name: 
+        - docker-ce
+        - docker-ce-cli
+        - docker-compose-plugin
+        - containerd.io
+      state: absent
+      purge: yes
+
+  - name: Remove Docker repository
+    apt_repository:
+      repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable"
+      state: absent
+
+  - name: Remove Docker GPG key
+    file:
+      path: /etc/apt/keyrings/docker.asc
+      state: absent
+
+  - name: Clean apt cache
+    apt:
+      update_cache: true
+      autoremove: true

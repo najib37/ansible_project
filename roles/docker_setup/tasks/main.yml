@@ -1,0 +1,61 @@
+
+
+--- 
+  - name: Create keyrings directory
+    file:
+      path: /etc/apt/keyrings
+      state: directory
+      mode: '0755'
+
+  - name: Download Docker GPG key
+    get_url:
+      url: https://download.docker.com/linux/debian/gpg
+      dest: /etc/apt/keyrings/docker.asc
+      mode: '0644'
+
+  - name: Add docker repository
+    apt_repository:
+      repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable"
+      state: present
+
+  - name: Update apt cashe and install docker-ce
+    apt:
+      name: docker-ce
+      state: latest
+      update_cache: true
+
+  - name: Install docker module for python
+    pip:
+      name: docker
+      break_system_packages: true
+
+  - name: Make sure the docker service is running
+    service:
+      name: docker
+      state: started
+      enabled: true
+
+  - name: Create docker compose remote directory
+    file:
+      path: /home/docker
+      state: directory
+
+  - name: Create database volume mount
+    file:
+      path: /home/data/db
+      state: directory
+
+  - name: Copy docker compose work directory to remote
+    copy:
+      src: ./docker-setup/
+      dest: /home/docker/
+
+  - name: Clear existing docker compose services
+    community.docker.docker_compose_v2:
+      project_src: /home/docker
+      state: absent
+
+  - name: Run the docker compose 
+    community.docker.docker_compose_v2:
+      project_src: /home/docker/
+    register: docker_compose_output

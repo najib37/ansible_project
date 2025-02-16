@@ -1,0 +1,17 @@
+
+
+---
+  - name: Install ssl dependencies
+    apt:
+      name: python3-cryptography
+      state: present
+
+  - name: Generate ssl private key
+    community.crypto.openssl_privatekey:
+      path: /home/certificate.key
+
+  - name: Generate ssl cert
+    community.crypto.x509_certificate:
+      path: /home/certificate.pem
+      privatekey_path: /home/certificate.key
+      provider: selfsigned
