@@ -1,6 +1,0 @@
-debian_servers:
-  hosts:
-    debian1:
-      # the ip of the server
-      ansible_host: 143.110.238.90 
-      ansible_user: root
