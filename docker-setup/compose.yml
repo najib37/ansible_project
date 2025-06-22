@@ -48,6 +48,11 @@ services:
         target: /etc/nginx/certs/certificate.pem
       - source: nginx_cert_key
         target: /etc/nginx/certs/certificate.key
+    depends_on:
+      wordpress: 
+          condition: service_healthy
+      db:
+          condition: service_healthy
     networks:
       - internal_network
 
@@ -64,6 +69,15 @@ services:
       WORDPRESS_DB_NAME: wordpress
     secrets:
       - db_password
+    depends_on:
+      db:
+          condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 240s
 
   db:
     image: mysql:8.0-debian
@@ -81,6 +95,12 @@ services:
       - internal_network
     volumes:
       - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=$$(cat /run/secrets/db_root_password)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   phpmyadmin:
     container_name: phpmyadmin

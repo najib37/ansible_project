@@ -58,4 +58,66 @@
   - name: Run the docker compose 
     community.docker.docker_compose_v2:
       project_src: /home/docker/
+      wait: true
     register: docker_compose_output
+
+  - name: Wait for WordPress container to be healthy
+    community.docker.docker_container_info:
+      name: wordpress
+    register: wp_container_info
+    until: wp_container_info.container.State.Health.Status == "healthy"
+    retries: 30
+    delay: 10
+
+  - name: Install WordPress CLI in container
+    community.docker.docker_container_exec:
+      container: wordpress
+      command: >
+        bash -c "
+        curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar &&
+        php wp-cli.phar --info &&
+        chmod +x wp-cli.phar &&
+        mv wp-cli.phar /usr/local/bin/wp
+        "
+
+  - name: Check if WordPress is already installed
+    community.docker.docker_container_exec:
+      container: wordpress
+      command: wp core is-installed --allow-root
+      chdir: /var/www/html
+    register: wp_installed
+    failed_when: false
+    changed_when: false
+
+  - name: Install WordPress if not already installed
+    community.docker.docker_container_exec:
+      container: wordpress
+      command: >
+        wp core install
+        --url="https://198.211.96.63"
+        --title="My WordPress Site"
+        --admin_user="najib"
+        --admin_password="na2#@!ass55"
+        --admin_email="admin@example.com"
+        --skip-email
+        --allow-root
+      chdir: /var/www/html
+    # when: wp_installed.rc != 0
+  - name: Create wp-config.php if it doesn't exist
+    community.docker.docker_container_exec:
+      container: wordpress
+      command: bash -c "wp config create --dbname=wordpress --dbuser=najib --dbpass=$(cat /run/secrets/db_password) --dbhost=db:3306 --allow-root --force"
+      chdir: /var/www/html
+    when: wp_installed.rc != 0
+
+  - name: Verify WordPress installation
+    community.docker.docker_container_exec:
+      container: wordpress
+      command: wp core version --allow-root
+      chdir: /var/www/html
+    register: wp_version
+    changed_when: false
+
+  - name: Display WordPress installation status
+    debug:
+      msg: "WordPress {{ wp_version.stdout }} is successfully installed and configured"
