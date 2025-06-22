@@ -13,12 +13,6 @@ secrets:
     file: /home/docker/secrets/db_root_password.txt
 
 volumes:
-  # portainer:
-  #   name: portainer
-  #   driver_opts:
-  #     o: bind
-  #     device: /home/data/portainer/
-  #     type: none
   db:
     name: db 
     driver_opts:

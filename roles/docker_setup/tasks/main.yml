@@ -80,7 +80,7 @@
         mv wp-cli.phar /usr/local/bin/wp
         "
 
-  - name: Check if WordPress is already installed
+  - name: Check if WordPress is already configured
     community.docker.docker_container_exec:
       container: wordpress
       command: wp core is-installed --allow-root
@@ -89,24 +89,18 @@
     failed_when: false
     changed_when: false
 
-  - name: Install WordPress if not already installed
+  - name: Configure WordPress core
     community.docker.docker_container_exec:
       container: wordpress
       command: >
         wp core install
-        --url="https://198.211.96.63"
-        --title="My WordPress Site"
+        --url="{{ansible_host}}"
+        --title="my website"
         --admin_user="najib"
-        --admin_password="na2#@!ass55"
+        --admin_password="{{ wordpress_admin_password | default('SucurePassword123!') }}"
         --admin_email="admin@example.com"
         --skip-email
         --allow-root
-      chdir: /var/www/html
-    # when: wp_installed.rc != 0
-  - name: Create wp-config.php if it doesn't exist
-    community.docker.docker_container_exec:
-      container: wordpress
-      command: bash -c "wp config create --dbname=wordpress --dbuser=najib --dbpass=$(cat /run/secrets/db_password) --dbhost=db:3306 --allow-root --force"
       chdir: /var/www/html
     when: wp_installed.rc != 0
 

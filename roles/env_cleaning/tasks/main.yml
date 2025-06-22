@@ -37,6 +37,15 @@
       path: /etc/apt/keyrings/docker.asc
       state: absent
 
+  - name: Remove the volume mount files
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - /home/data/db
+      - /home/docker
+    become: true
+
   - name: Clean apt cache
     apt:
       update_cache: true
