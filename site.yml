@@ -1,8 +1,0 @@
----
-
-- name: setup docker and running my compose services
-  hosts: all
-  become: true
-  roles:
-    - cert_generation
-    - docker_setup
