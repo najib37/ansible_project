@@ -3,3 +3,6 @@
 data
 .env
 secrets/
+
+group_vars/all/*.yml
+vault.pass
