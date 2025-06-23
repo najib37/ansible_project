@@ -1,0 +1,7 @@
+---
+
+- name: tear the docker compose services and purge docker
+  hosts: all
+  become: true
+  roles:
+    - env_cleaning

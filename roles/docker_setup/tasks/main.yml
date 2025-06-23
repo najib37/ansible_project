@@ -1,6 +1,6 @@
 
 
---- 
+---
   - name: Create keyrings directory
     file:
       path: /etc/apt/keyrings
@@ -18,9 +18,11 @@
       repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable"
       state: present
 
-  - name: Update apt cashe and install docker-ce
+  - name: Update apt cache and install docker-ce
     apt:
-      name: docker-ce
+      name:
+        - docker-ce
+        - python3-pip
       state: latest
       update_cache: true
 
@@ -47,7 +49,7 @@
 
   - name: Copy docker compose work directory to remote
     copy:
-      src: ./docker-setup/
+      src: ../docker-setup/
       dest: /home/docker/
 
   - name: Clear existing docker compose services
@@ -55,7 +57,7 @@
       project_src: /home/docker
       state: absent
 
-  - name: Run the docker compose 
+  - name: Run the docker compose
     community.docker.docker_compose_v2:
       project_src: /home/docker/
       wait: true
@@ -97,7 +99,7 @@
         --url="{{ansible_host}}"
         --title="my website"
         --admin_user="najib"
-        --admin_password="{{ wordpress_admin_password | default('SucurePassword123!') }}"
+        --admin_password="{{ wordpress_password | default('SucurePassword123!') }}"
         --admin_email="admin@example.com"
         --skip-email
         --allow-root
